@@ -19,8 +19,8 @@ class Satellite {
   void updatePosition() { 
     if (!(paused)){
       angle += speed;
-      xMiddle = width/2 + radius * cos(angle/(this.mass/100));
-      yMiddle = height/2 + radius * sin(angle/(this.mass/100));
+      xMiddle = width/2 + (this.radius + 92)* cos(angle/(this.mass/100));
+      yMiddle = height/2 + (this.radius + 92) * sin(angle/(this.mass/100));
     }
   }
   
