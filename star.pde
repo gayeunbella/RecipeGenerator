@@ -1,6 +1,5 @@
 class Star {
-  float x;
-  float y;
+  float x, y;
   
   Star(float x, float y) {
     this.x = x;
