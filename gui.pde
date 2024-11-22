@@ -14,40 +14,70 @@
  * =========================================================
  */
 
+public void startclicked(GButton source, GEvent event) { //_CODE_:start:409693:
+introScreen=false;
+source.setVisible(false);
+
+} //_CODE_:start:409693:
+
 synchronized public void win_draw1(PApplet appc, GWinData data) { //_CODE_:window1:303750:
   appc.background(230);
 } //_CODE_:window1:303750:
 
 public void PlanetClicked(GDropList source, GEvent event) { //_CODE_:Planet:427209:
-  selectedplanet= source.getSelectedText();
-  planet.selectedplanet=selectedplanet;
+  selectedPlanet= source.getSelectedText();
+  planet.selectedPlanet=selectedPlanet;
   planet.Assignvalues();
 } //_CODE_:Planet:427209:
 
 public void orbitHeightChanged(GCustomSlider source, GEvent event) { //_CODE_:orbitHeight:576902:
-  satellite.radius = orbitHeight.getValueI();
+if (!satellites.isEmpty()) {
+    Satellite lastSatellite = satellites.get(satellites.size() - 1);
+    lastSatellite.radius = orbitHeight.getValueI();
+  }
 } //_CODE_:orbitHeight:576902:
 
 public void satelliteMassChanged(GCustomSlider source, GEvent event) { //_CODE_:satelliteMass:286010:
-  satellite.mass = satelliteMass.getValueI();
+if (!satellites.isEmpty()) {
+    Satellite lastSatellite = satellites.get(satellites.size() - 1);
+    // Update the mass
+    lastSatellite.mass = satelliteMass.getValueI();
+
+ }
 } //_CODE_:satelliteMass:286010:
 
 public void generateSatellite(GButton source, GEvent event) { //_CODE_:satelliteGenerator:855675:
-  println("satelliteGenerator - GButton >> GEvent." + event + " @ " + millis());
+  createsatellite=true;
 } //_CODE_:satelliteGenerator:855675:
 
 public void pauseScene(GButton source, GEvent event) { //_CODE_:pause:248119:
   paused = !paused;
-
+  
+  // If paused, pause the scenes and change what the button says to resume
   if (pause.getText().equals("Pause")) {
     pause.setText("Resume");
     pause.setLocalColorScheme(GCScheme.GREEN_SCHEME);
   } 
+  
+  // If resumed, resume the scenes and change what the button says back to pause
   else {
     pause.setText("Pause"); 
     pause.setLocalColorScheme(GCScheme.RED_SCHEME);
   }
 } //_CODE_:pause:248119:
+
+synchronized public void win_draw2(PApplet appc, GWinData data) { //_CODE_:window2:330677:
+  label4.setText("Total Energy: " + totalEnergy + " J");
+  label4.setOpaque(true);
+  label5.setText("Kinetic Energy: " + kineticEnergy + " J");
+  label5.setOpaque(true);
+  label6.setText("Satellite Speed: " +satelliteSpeed + " m/s");
+  label6.setOpaque(true);
+  label7.setText("Gravitational Potential Energy: " + gravitationalPotential + " J");
+  label7.setOpaque(true);
+  label8.setText("Satellite Calculations");
+  label8.setOpaque(true);
+} //_CODE_:window2:330677:
 
 
 
@@ -58,54 +88,80 @@ public void createGUI(){
   G4P.setGlobalColorScheme(GCScheme.BLUE_SCHEME);
   G4P.setMouseOverEnabled(false);
   surface.setTitle("Sketch Window");
-  window1 = GWindow.getWindow(this, "Window title", 0, 0, 350, 400, JAVA2D);
+  start = new GButton(this, 320, 300, 160, 60);
+  start.setText("START");
+  start.setLocalColorScheme(GCScheme.GREEN_SCHEME);
+  start.addEventHandler(this, "startclicked");
+  window1 = GWindow.getWindow(this, "GUI", 0, 0, 300, 400, JAVA2D);
   window1.noLoop();
   window1.setActionOnClose(G4P.KEEP_OPEN);
   window1.addDrawHandler(this, "win_draw1");
-  Planet = new GDropList(window1, 20, 50, 310, 80, 3, 10);
+  Planet = new GDropList(window1, 20, 50, 260, 80, 3, 10);
   Planet.setItems(loadStrings("list_427209"), 0);
   Planet.addEventHandler(this, "PlanetClicked");
-  orbitHeight = new GCustomSlider(window1, 20, 185, 310, 40, "grey_blue");
+  orbitHeight = new GCustomSlider(window1, 20, 190, 260, 50, "grey_blue");
   orbitHeight.setShowValue(true);
   orbitHeight.setShowLimits(true);
-  orbitHeight.setLimits(200, 0, 400);
-  orbitHeight.setNbrTicks(500);
+  orbitHeight.setLimits(5000, 0, 10000);
+  orbitHeight.setNbrTicks(999);
   orbitHeight.setStickToTicks(true);
   orbitHeight.setNumberFormat(G4P.INTEGER, 0);
   orbitHeight.setOpaque(false);
   orbitHeight.addEventHandler(this, "orbitHeightChanged");
-  satelliteMass = new GCustomSlider(window1, 20, 275, 310, 40, "grey_blue");
+  satelliteMass = new GCustomSlider(window1, 20, 300, 260, 40, "grey_blue");
   satelliteMass.setShowValue(true);
   satelliteMass.setShowLimits(true);
-  satelliteMass.setLimits(100, 0, 5000);
+  satelliteMass.setLimits(2500, 0, 5000);
   satelliteMass.setNbrTicks(250);
   satelliteMass.setNumberFormat(G4P.INTEGER, 0);
   satelliteMass.setOpaque(false);
   satelliteMass.addEventHandler(this, "satelliteMassChanged");
-  label1 = new GLabel(window1, 20, 240, 310, 20);
+  label1 = new GLabel(window1, 20, 260, 260, 20);
   label1.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
-  label1.setText("Mass of the Satellite");
+  label1.setText("Mass of the Satellite (kg)");
   label1.setOpaque(false);
-  label2 = new GLabel(window1, 20, 150, 310, 20);
+  label2 = new GLabel(window1, 20, 150, 270, 40);
   label2.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
-  label2.setText("Distance between the Earth's Surface and Satellite ");
+  label2.setText("Distance between the Planet's Surface and Satellite (km)");
   label2.setOpaque(false);
-  label3 = new GLabel(window1, 20, 15, 310, 20);
+  label3 = new GLabel(window1, 20, 25, 260, 20);
   label3.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
-  label3.setText("Planet to Orbit");
+  label3.setText("Celestial Body");
   label3.setOpaque(false);
-  satelliteGenerator = new GButton(window1, 20, 330, 205, 30);
+  satelliteGenerator = new GButton(window1, 20, 340, 155, 30);
   satelliteGenerator.setText("Create a Satellite");
   satelliteGenerator.addEventHandler(this, "generateSatellite");
-  pause = new GButton(window1, 230, 330, 100, 30);
+  pause = new GButton(window1, 180, 340, 100, 30);
   pause.setText("Pause");
   pause.setLocalColorScheme(GCScheme.RED_SCHEME);
   pause.addEventHandler(this, "pauseScene");
+  window2 = GWindow.getWindow(this, "Calculations", 0, 440, 300, 200, JAVA2D);
+  window2.noLoop();
+  window2.setActionOnClose(G4P.KEEP_OPEN);
+  window2.addDrawHandler(this, "win_draw2");
+  label4 = new GLabel(window2, 4, 170, 292, 20);
+  label4.setText("Total Energy: ");
+  label4.setOpaque(false);
+  label5 = new GLabel(window2, 4, 50, 292, 20);
+  label5.setText("Kinetic Energy:");
+  label5.setOpaque(false);
+  label6 = new GLabel(window2, 4, 130, 292, 20);
+  label6.setText("Satellite Speed:");
+  label6.setOpaque(false);
+  label7 = new GLabel(window2, 4, 90, 292, 20);
+  label7.setText("Gravitational Potential Energy:");
+  label7.setOpaque(false);
+  label8 = new GLabel(window2, 75, 7, 150, 20);
+  label8.setTextAlign(GAlign.CENTER, GAlign.MIDDLE);
+  label8.setText("Satellite Calculations");
+  label8.setOpaque(false);
   window1.loop();
+  window2.loop();
 }
 
 // Variable declarations 
 // autogenerated do not edit
+GButton start; 
 GWindow window1;
 GDropList Planet; 
 GCustomSlider orbitHeight; 
@@ -115,3 +171,9 @@ GLabel label2;
 GLabel label3; 
 GButton satelliteGenerator; 
 GButton pause; 
+GWindow window2;
+GLabel label4; 
+GLabel label5; 
+GLabel label6; 
+GLabel label7; 
+GLabel label8; 
