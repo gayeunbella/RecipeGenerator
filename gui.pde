@@ -47,6 +47,7 @@ if (!satellites.isEmpty()) {
 } //_CODE_:satelliteMass:286010:
 
 public void generateSatellite(GButton source, GEvent event) { //_CODE_:satelliteGenerator:855675:
+  //Sets create satellite to true which triggers the createSatellite function
   createsatellite=true;
 } //_CODE_:satelliteGenerator:855675:
 

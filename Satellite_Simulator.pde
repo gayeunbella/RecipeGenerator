@@ -127,6 +127,7 @@ void drawIntroScreen(){
   } 
 }
 
+//Created a function to avoid concurrentmodificationexception error code
 void createSatellite(){
     int currentTime=millis();
   // To prevent people spamming the generate button, make generation possible after 5 seconds from generating the last satellite
